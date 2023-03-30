@@ -2,15 +2,15 @@
 
 int main()
 {
-    unsigned long int a, b = 0;
-    std::cin >> a;
-    while(a != 0)
+    unsigned long long num, reversed_num = 0;
+    std::cin >> num;
+    for(;num != 0;)
     {
-        b = (b * 10) + (a%10);
-        a /= 10;
+        reversed_num = (reversed_num * 10) + (num%10);
+        num /= 10;
     }
 
-    std::cout << b << "\n";
+    std::cout << reversed_num << "\n";
 
     return 0;
 }
