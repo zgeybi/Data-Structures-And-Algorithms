@@ -1,194 +1,123 @@
 #include <iostream>
 #include <string>
 
-template<typename T>
-class Vector
-{
+template <typename T> class Vector {
 private:
-    T *arr;
-    size_t size;
-    size_t capacity;
+  T *arr_;
+  size_t size_;
+  size_t capacity_;
 
 public:
-    Vector()
-    {
-        size = 0;
-        capacity = 1;
-        arr = new T[capacity];
+  Vector() {
+    size_ = 0;
+    capacity_ = 1;
+    arr_ = new T[capacity_];
+  }
+
+  ~Vector() { delete[] arr_; }
+
+  void Push(T val) {
+    if (size_ == capacity_) {
+      this->Resize(capacity_ * 2);
     }
+    arr_[size_++] = val;
 
-    ~Vector()
-    {
-        delete[] arr;
+    std::cout << "ok" << '\n';
+    return;
+  }
+  void Pop() {
+    if (size_ == 0) {
+      std::cout << "error" << '\n';
+      return;
     }
-
-    void Push(T val)
-    {
-        if (size == capacity) {
-            T* new_array = new T[capacity * 2];
-            for (size_t i = 0; i < size; i++) {
-                new_array[i] = arr[i];
-            }
-            delete[] arr;
-            arr = new_array;
-            capacity *= 2;
-        }
-        arr[size++] = val;
-
-        std::cout << "ok" << '\n';
-        return;
+    size_--;
+    std::cout << arr_[size_] << '\n';
+    if (size_ == (capacity_ / 2) && size_ > 0) {
+      this->Resize(capacity_ / 2);
     }
+    return;
+  }
+  T ElementAtIndex(size_t index) { return arr_[index]; }
 
-    void Pop()
-    {
-        if(size == 0)
-        {
-            std::cout << "error" << '\n';
-            return;
-        }
-        size--;
-        std::cout << arr[size] << '\n';
-        if(size == (capacity/2) && size > 0)
-        {
-            capacity /= 2;
-            T *new_array = new T[capacity];
-            for (int i = 0; i < size; i++)
-            {
-                new_array[i] = arr[i];
-            }
-            delete[] arr;
-            arr = new_array;
-        }
+  void Resize(size_t new_capacity) {
+    T *new_array = new T[new_capacity];
+    capacity_ = new_capacity;
 
-        return;
+    if (new_capacity < size_) {
+      for (int i = 0; i < new_capacity; i++) {
+        new_array[i] = arr_[i];
+      }
+      delete[] arr_;
+      arr_ = new_array;
+      return;
+    } else if (new_capacity >= size_) {
+      for (int i = 0; i < size_; i++) {
+        new_array[i] = arr_[i];
+      }
+      delete[] arr_;
+      arr_ = new_array;
+      return;
     }
+  }
 
-    void ElementAtIndex(size_t index)
-    {
-        if(index >= size || index < 0)
-        {
-            std::cout << "error" << '\n';
-            return;
-        }
-        std::cout << arr[index] << '\n';
-        return;
-    }
+  size_t Size() { return size_; }
 
-    void Resize(size_t new_capacity)
-    {
-        T* new_array = new T[new_capacity];
-        capacity = new_capacity;
+  size_t Capacity() { return capacity_; }
 
-        if(new_capacity < size)
-        {
-            for(int i = 0; i < new_capacity; i++)
-            {
-                new_array[i] = arr[i];
-            }  
-            delete[] arr;
-            arr = new_array;
-            std::cout << "ok" << '\n';
-            return;
-        }
-        else if(new_capacity >= size)
-        {
-            for (int i = 0; i < size; i++)
-            {
-                new_array[i] = arr[i];
-            }
-            delete[] arr;
-            arr = new_array;
-            std::cout << "ok" << '\n';
-            return;
-        }
-
-        
-    }
-
-    void PrintSize()
-    {
-        std::cout << size << '\n';
-        return;
-    }
-
-    void PrintCapacity()
-    {
-        std::cout << capacity << '\n';
-        return;
-    }
-
-    void Clear()
-    {
-        size = 0;
-        capacity = 1;
-        T *cleared_array = new T[capacity];
-        delete[] arr;
-        arr = cleared_array;
-        std::cout << "ok" << '\n';
-    }
-
-
+  void Clear() {
+    size_ = 0;
+    capacity_ = 1;
+    T *cleared_array = new T[capacity_];
+    delete[] arr_;
+    arr_ = cleared_array;
+    std::cout << "ok" << '\n';
+  }
 };
 
-int main()
-{
-    Vector<int> vector;
-    std::string input;
-    int val = 0;
-    while (1)
-    {
-        std::cin >> input;
-        if(input == "push")
-        {
-            std::cin >> val;
-            vector.Push(val);
-            
-            continue;
+int main() {
+  Vector<int> vector;
+  std::string input;
+  int val = 0;
+  while (1) {
+    std::cin >> input;
+    if (input == "push") {
+      std::cin >> val;
+      vector.Push(val);
+      continue;
+    } else if (input == "pop") {
+      vector.Pop();
+      continue;
+    } else if (input == "at") {
+      std::cin >> val;
+      try {
+        if (val >= vector.Size() || val < 0) {
+          throw "error";
+        } else {
+          std::cout << vector.ElementAtIndex(val) << '\n';
         }
-        else if(input == "pop")
-        {
-            vector.Pop();
-            continue;
-        }
-        else if(input == "at")
-        {
-            std::cin >> val;
-            vector.ElementAtIndex(val);
-            continue;
-        }
-        else if(input == "size")
-        {
-            vector.PrintSize();
-            continue;
-        }
-        else if(input == "resize")
-        {
-            
-            std::cin >> val;
-            vector.Resize(val);
-            continue;
-        }
-        else if(input == "capacity")
-        {
-            vector.PrintCapacity();
-            continue;
-        }
-        else if(input == "clear")
-        {
-            vector.Clear();
-            continue;
-        }
-
-        else if(input == "exit")
-        {
-            std::cout << "bye";
-            return 0;
-        }
-        /*else {
-            continue;
-        }*/
-        
+      } catch (const char *msg) {
+        std::cout << msg << '\n';
+      }
+      continue;
+    } else if (input == "size") {
+      std::cout << vector.Size() << '\n';
+      continue;
+    } else if (input == "resize") {
+      std::cin >> val;
+      vector.Resize(val);
+      std::cout << "ok" << '\n';
+      continue;
+    } else if (input == "capacity") {
+      std::cout << vector.Capacity() << '\n';
+      continue;
+    } else if (input == "clear") {
+      vector.Clear();
+      continue;
+    } else if (input == "exit") {
+      std::cout << "bye" << '\n';
+      return 0;
     }
+  }
 
-    return 0;
+  return 0;
 }
