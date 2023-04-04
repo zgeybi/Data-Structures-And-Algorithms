@@ -8,7 +8,7 @@ struct Node {
     val_ = ' ';
     next = nullptr;
   }
-  ~Node() { delete next; }
+  ~Node() {}
 };
 class List {
 private:
@@ -16,15 +16,12 @@ private:
 
 public:
   List() { root_ = new Node(); }
-  ~List() { Clear(root_); }
-  void Clear(Node *head) {
-    if (head->next == nullptr) {
-      head->~Node();
-      return;
+  ~List() {
+    while (root_ != nullptr) {
+      Node *next = root_->next;
+      delete root_;
+      root_ = next;
     }
-    Node *next = head->next;
-    head->~Node();
-    Clear(next);
   }
   void AddElements(std::string val) {
     for (int i = 0; i < val.size(); i++) {
@@ -32,6 +29,7 @@ public:
       temp->val_ = val[i];
       temp->next = nullptr;
       if (root_->val_ == ' ') {
+        delete root_;
         root_ = temp;
         continue;
       }
@@ -48,8 +46,7 @@ public:
     return last;
   }
   void printElements(Node *next) {
-    Node *temp = new Node();
-    temp = next;
+    Node *temp = next;
     if (temp->next == nullptr) {
       std::cout << temp->val_;
       return;
@@ -68,7 +65,10 @@ public:
     return temp;
   }
   Node *GetRoot() { return root_; }
-  void SetRoot(Node *root) { root_ = root; }
+  void SetRoot(Node *root) {
+    delete root_;
+    root_ = root;
+  }
 };
 
 int main() {
@@ -81,7 +81,6 @@ int main() {
   head = linked_list->reverseList(linked_list->GetRoot());
   reversed->SetRoot(head);
   reversed->printElements(head);
-
+  delete reversed;
   return 0;
 }
-
