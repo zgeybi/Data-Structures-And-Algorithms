@@ -2,49 +2,37 @@
 #include <string>
 #include <vector>
 
-class Stack {
+template <typename T> class Stack {
 private:
-  std::vector<int> vec[10070];
-  int top;
+  std::vector<T> vec;
+  T top_;
 
 public:
-  Stack() { top = -1; }
+  Stack() { top_ = -1; }
 
-  bool IsEmpty() { return top == -1; }
+  bool IsEmpty() { return top_ == -1; }
 
   void Push(int val) {
-    vec->push_back(val);
-    top++;
-    std::cout << "ok" << '\n';
+    vec.push_back(val);
+    top_++;
   }
 
   void Pop() {
-    if (IsEmpty()) {
-      std::cout << "error" << '\n';
-      return;
-    }
-    std::cout << vec->at(top--) << '\n';
-    vec->pop_back();
+    std::cout << vec.at(top_--) << '\n';
+    vec.pop_back();
     return;
   }
 
-  int Back() {
-    if (IsEmpty()) {
-      std::cout << "error" << std::endl;
-      return -1;
-    }
-    return vec->at(top);
-  }
-  int Size() { return vec->size(); }
+  int Back() { return vec.at(top_); }
+  int Size() { return vec.size(); }
   void Clear() {
-    vec->clear();
-    top = -1;
-    std::cout << "ok" << '\n';
+    vec.clear();
+    top_ = -1;
   }
 };
 
 int main() {
-  Stack stack;
+  Stack<int> stack;
   int n;
   std::string input;
   while (true) {
@@ -52,17 +40,26 @@ int main() {
     if (input == "push") {
       std::cin >> n;
       stack.Push(n);
+      std::cout << "ok" << '\n';
     } else if (input == "pop") {
-      stack.Pop();
-    } else if (input == "back") {
-      if (stack.Back() == -1) {
+      if (stack.IsEmpty()) {
+        std::cout << "error" << '\n';
         continue;
+      } else {
+        stack.Pop();
       }
-      std::cout << stack.Back() << '\n';
+    } else if (input == "back") {
+      if (stack.IsEmpty()) {
+        std::cout << "error" << std::endl;
+        continue;
+      } else {
+        std::cout << stack.Back() << '\n';
+      }
     } else if (input == "size") {
       std::cout << stack.Size() << '\n';
     } else if (input == "clear") {
       stack.Clear();
+      std::cout << "ok" << '\n';
     } else if (input == "exit") {
       std::cout << "bye" << '\n';
       break;
