@@ -1,63 +1,64 @@
 #include <iostream>
+#include <iterator>
 #include <string>
 
 struct Node {
-  char val_;
+  char val;
   Node *next;
-  Node() {
-    val_ = ' ';
+  Node(char val_) {
+    val = val_;
     next = nullptr;
   }
 };
 class List {
-private:
+ private:
   Node *root_;
+  Node *tail_;
 
-public:
-  List() { root_ = new Node(); }
-  List(std::string val) {
-    root_ = new Node();
-    for (int i = 0; i < val.size(); i++) {
-      AddElement(val[i]);
-    }
+ public:
+  List(std::string val_) {
+    root_ = new Node(' ');
+    tail_ = root_;
+    AddElement(val_.begin(), val_.end());
   }
   ~List() {
-    while (root_ != nullptr) {
+    while (root_ != tail_) {
       Node *next = root_->next;
       delete root_;
       root_ = next;
     }
+    delete tail_;
+    root_ = nullptr;
+    tail_ = nullptr;
   }
-  void AddElement(char a) {
-    Node *new_node = new Node();
-    new_node->val_ = a;
-    new_node->next = nullptr;
-    if (root_->val_ == ' ') {
-      delete root_;
-      root_ = new_node;
-      return;
-    } else {
-      Node *last = FindLastNode(root_);
-      last->next = new_node;
+  void AddElement(std::basic_string<char>::iterator begin,
+                  std::basic_string<char>::iterator end) {
+    if (begin == end) {
       return;
     }
+    Node *new_node = new Node(*begin);
+    if (root_->val == ' ') {
+      root_->val = new_node->val;
+      tail_ = root_;
+      delete new_node;
+      new_node = nullptr;
+    } else {
+      Node *last = tail_;
+      last->next = new_node;
+      tail_ = new_node;
+      new_node = nullptr;
+      delete new_node;
+    }
+    AddElement(++begin, end);
   }
 
-  Node *FindLastNode(Node *head) {
-    Node *last = head;
-    if (last->next == nullptr) {
-      return last;
-    }
-    Node *next = FindLastNode(last->next);
-    return next;
-  }
   void printElements(Node *next) {
     Node *temp = next;
     if (temp->next == nullptr) {
-      std::cout << temp->val_;
+      std::cout << temp->val;
       return;
     }
-    std::cout << temp->val_;
+    std::cout << temp->val;
     printElements(temp->next);
   }
   Node *reverseList(Node *head) {
@@ -71,16 +72,18 @@ public:
     return temp;
   }
   Node *GetRoot() { return root_; }
-  void SetRoot(Node *root) { root_ = root; }
+  void SetRoot(Node *root) {
+    tail_ = root_;
+    root_ = root;
+  }
 };
 
 int main() {
   std::string a;
   std::getline(std::cin, a);
-  List *linked_list = new List(a);
-  linked_list->SetRoot(linked_list->reverseList(linked_list->GetRoot()));
-  List *reversed = new List();
-  reversed->SetRoot(linked_list->GetRoot());
-  reversed->printElements(reversed->GetRoot());
+  List linked_list(a);
+  linked_list.SetRoot(linked_list.reverseList(linked_list.GetRoot()));
+  linked_list.printElements(linked_list.GetRoot());
   return 0;
 }
+
