@@ -2,12 +2,13 @@
 #include <string>
 #include <vector>
 
-template <typename T> class Stack {
-private:
+template <typename T>
+class Stack {
+ private:
   std::vector<T> vec;
   T top_;
 
-public:
+ public:
   Stack() { top_ = -1; }
 
   bool IsEmpty() { return top_ == -1; }
