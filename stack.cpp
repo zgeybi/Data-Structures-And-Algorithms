@@ -5,7 +5,7 @@
 template <typename T>
 class Stack {
  private:
-  std::vector<T> vec;
+  std::vector<T> vector_;
   T top_;
 
  public:
@@ -14,20 +14,20 @@ class Stack {
   bool IsEmpty() { return top_ == -1; }
 
   void Push(int val) {
-    vec.push_back(val);
+    vector_.push_back(val);
     top_++;
   }
 
   void Pop() {
-    std::cout << vec.at(top_--) << '\n';
-    vec.pop_back();
+    std::cout << vector_.at(top_--) << '\n';
+    vector_.pop_back();
     return;
   }
 
-  int Back() { return vec.at(top_); }
-  int Size() { return vec.size(); }
+  int Back() { return vector_.at(top_); }
+  int Size() { return vector_.size(); }
   void Clear() {
-    vec.clear();
+    vector_.clear();
     top_ = -1;
   }
 };
