@@ -26,7 +26,7 @@ class Stack {
     capacity_ = 1;
     out_stack_ = new Pair<T>[capacity_];
   }
-  //~Stack() { delete[] out_stack_; }
+  ~Stack() { delete[] out_stack_; }
 
   void Enqueue(T val) {
     if (size_ == capacity_) {
@@ -115,53 +115,57 @@ class Stack {
 template <typename T, class TLess = IsLess<T>>
 class MinQueue {
  private:
-  Stack<T> in_stack_;
-  Stack<T> out_stack_;
+  Stack<T> *in_stack_;
+  Stack<T> *out_stack_;
 
  public:
   MinQueue(TLess comparator = TLess()) {
-    in_stack_ = Stack<T>();
-    out_stack_ = Stack<T>();
+    in_stack_ = new Stack<T>();
+    out_stack_ = new Stack<T>();
   }
-  void Enqueue(T val) { in_stack_.Enqueue(val); }
+  ~MinQueue() {
+    delete in_stack_;
+    delete out_stack_;
+  }
+  void Enqueue(T val) { in_stack_->Enqueue(val); }
 
   T PopBack() {
-    if (out_stack_.Size() == 0) {
-      if (in_stack_.Size() == 0) {
+    if (out_stack_->Size() == 0) {
+      if (in_stack_->Size() == 0) {
         throw "error";
         return -1;
       }
-      out_stack_.CopyStack(&in_stack_);
+      out_stack_->CopyStack(in_stack_);
     }
-    return out_stack_.PopBack();
+    return out_stack_->PopBack();
   }
 
   T Front() {
-    if (out_stack_.Size() == 0) {
-      if (in_stack_.Size() == 0) {
+    if (out_stack_->Size() == 0) {
+      if (in_stack_->Size() == 0) {
         throw "error";
         return -1;
       }
-      return in_stack_.Front(true);
+      return in_stack_->Front(true);
     }
-    return out_stack_.Front(false);
+    return out_stack_->Front(false);
   }
 
   T GetMin() {
-    if (out_stack_.Size() == 0 && in_stack_.Size() == 0) {
+    if (out_stack_->Size() == 0 && in_stack_->Size() == 0) {
       throw "error";
-    } else if (out_stack_.Size() == 0) {
-      return in_stack_.GetMin();
-    } else if (in_stack_.Size() == 0) {
-      return out_stack_.GetMin();
+    } else if (out_stack_->Size() == 0) {
+      return in_stack_->GetMin();
+    } else if (in_stack_->Size() == 0) {
+      return out_stack_->GetMin();
     }
-    return std::min(in_stack_.GetMin(), out_stack_.GetMin());
+    return std::min(in_stack_->GetMin(), out_stack_->GetMin());
   }
 
-  size_t Size() { return in_stack_.Size() + out_stack_.Size(); }
+  size_t Size() { return in_stack_->Size() + out_stack_->Size(); }
   void Clear() {
-    in_stack_.Clear();
-    out_stack_.Clear();
+    in_stack_->Clear();
+    out_stack_->Clear();
   }
 };
 
