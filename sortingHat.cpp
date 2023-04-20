@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <iostream>
 #include <string>
 
@@ -8,116 +9,24 @@ struct Pair {
 };
 
 template <typename T>
-class StackIn {
- private:
-  Pair<T> *in_stack_;
-  T front_;
-  size_t size_;
-  size_t capacity_;
-
- public:
-  StackIn() {
-    size_ = 0;
-    capacity_ = 1;
-    front_ = 0;
-    in_stack_ = new Pair<T>[capacity_];
-  }
-
-  ~StackIn() { delete[] in_stack_; }
-
-  void Enqueue(T val) {
-    if (size_ == capacity_) {
-      Resize(capacity_ * 2);
-    }
-    if (size_ == 0) {
-      in_stack_->val = val;
-      in_stack_->min = val;
-      size_++;
-      return;
-    }
-    (in_stack_ + size_)->val = val;
-    if ((in_stack_ + size_ - 1)->min > val) {
-      (in_stack_ + size_)->min = val;
-      size_++;
-    } else {
-      (in_stack_ + size_)->min = (in_stack_ + size_ - 1)->min;
-      size_++;
-    }
-    return;
-  }
-
-  T PopBack() {
-    if (size_ == 0) {
-      throw "error";
-    }
-    if (size_ == capacity_ / 2) {
-      Resize(capacity_ / 2);
-    }
-    return in_stack_[size_-- - 1].val;
-  }
-
-  T GetMin() {
-    if (size_ == 0) {
-      throw "error";
-    }
-    return in_stack_[(size_ - 1)].min;
-  }
-
-  T Front() {
-    if (size_ == 0) {
-      throw "error";
-    }
-    return in_stack_[0].val;
-  }
-
-  void Resize(size_t new_capacity) {
-    Pair<T> *new_array = new Pair<T>[new_capacity];
-    capacity_ = new_capacity;
-
-    if (new_capacity < size_) {
-      for (int i = 0; i < new_capacity; i++) {
-        new_array[i] = in_stack_[i];
-      }
-      delete[] in_stack_;
-      in_stack_ = new_array;
-      return;
-    } else if (new_capacity >= size_) {
-      for (int i = 0; i < size_; i++) {
-        new_array[i] = in_stack_[i];
-      }
-      delete[] in_stack_;
-      in_stack_ = new_array;
-      return;
-    }
-  }
-
-  size_t Size() { return size_; }
-
-  void Clear() {
-    size_ = 0;
-    capacity_ = 1;
-    Pair<T> *cleared_array = new Pair<T>[capacity_];
-    delete[] in_stack_;
-    in_stack_ = cleared_array;
-  }
-
-  Pair<T> *GetArray() { return in_stack_; }
+struct IsLess {
+  bool operator()(const T &l, const T &r) const { return l <= r; }
 };
 
-template <typename T>
-class StackOut {
+template <typename T, class TLess = IsLess<T>>
+class Stack {
  private:
   Pair<T> *out_stack_;
   size_t size_;
   size_t capacity_;
 
  public:
-  StackOut() {
+  Stack(TLess comparator = TLess()) {
     size_ = 0;
     capacity_ = 1;
     out_stack_ = new Pair<T>[capacity_];
   }
-  ~StackOut() { delete[] out_stack_; }
+  //~Stack() { delete[] out_stack_; }
 
   void Enqueue(T val) {
     if (size_ == capacity_) {
@@ -175,11 +84,15 @@ class StackOut {
     return (out_stack_ + (size_ - 1))->min;
   }
 
-  T Front() {
+  T Front(bool in_or_out) {
     if (size_ == 0) {
       throw "error";
     }
-    return out_stack_[size_ - 1].val;
+    if (in_or_out) {
+      return out_stack_[0].val;
+    } else {
+      return out_stack_[size_ - 1].val;
+    }
   }
 
   size_t Size() { return size_; }
@@ -190,7 +103,7 @@ class StackOut {
     delete[] out_stack_;
     out_stack_ = cleared_array;
   }
-  void CopyStack(StackIn<T> *stack1) {
+  void CopyStack(Stack<T> *stack1) {
     size_t size = stack1->Size();
     for (int i = 0; i < size; i++) {
       Enqueue(stack1->PopBack());
@@ -199,10 +112,62 @@ class StackOut {
   }
 };
 
+template <typename T, class TLess = IsLess<T>>
+class MinQueue {
+ private:
+  Stack<T> in_stack_;
+  Stack<T> out_stack_;
+
+ public:
+  MinQueue(TLess comparator = TLess()) {
+    in_stack_ = Stack<T>();
+    out_stack_ = Stack<T>();
+  }
+  void Enqueue(T val) { in_stack_.Enqueue(val); }
+
+  T PopBack() {
+    if (out_stack_.Size() == 0) {
+      if (in_stack_.Size() == 0) {
+        throw "error";
+        return -1;
+      }
+      out_stack_.CopyStack(&in_stack_);
+    }
+    return out_stack_.PopBack();
+  }
+
+  T Front() {
+    if (out_stack_.Size() == 0) {
+      if (in_stack_.Size() == 0) {
+        throw "error";
+        return -1;
+      }
+      return in_stack_.Front(true);
+    }
+    return out_stack_.Front(false);
+  }
+
+  T GetMin() {
+    if (out_stack_.Size() == 0 && in_stack_.Size() == 0) {
+      throw "error";
+    } else if (out_stack_.Size() == 0) {
+      return in_stack_.GetMin();
+    } else if (in_stack_.Size() == 0) {
+      return out_stack_.GetMin();
+    }
+    return std::min(in_stack_.GetMin(), out_stack_.GetMin());
+  }
+
+  size_t Size() { return in_stack_.Size() + out_stack_.Size(); }
+  void Clear() {
+    in_stack_.Clear();
+    out_stack_.Clear();
+  }
+};
+
 int main() {
   int n;
-  StackIn<long long> *stack_in = new StackIn<long long>();
-  StackOut<long long> *stack_out = new StackOut<long long>();
+  MinQueue<long long> *Queue = new MinQueue<long long>();
   std::cin >> n;
   std::string input;
   for (int i = 0; i < n; i++) {
@@ -210,66 +175,43 @@ int main() {
     if (input == "enqueue") {
       long long val;
       std::cin >> val;
-      stack_in->Enqueue(val);
+      Queue->Enqueue(val);
       std::cout << "ok" << '\n';
       continue;
     } else if (input == "dequeue") {
       try {
-        long long value = stack_out->PopBack();
+        long long value = Queue->PopBack();
         std::cout << value << '\n';
       } catch (const char *msg) {
-        if (stack_in->Size() == 0) {
-          std::cout << msg << '\n';
-        } else {
-          stack_out->CopyStack(stack_in);
-          std::cout << stack_out->PopBack() << '\n';
-        }
+        std::cout << msg << '\n';
       }
       continue;
     } else if (input == "front") {
       try {
-        long long value = stack_out->Front();
+        long long value = Queue->Front();
         std::cout << value << '\n';
       } catch (const char *msg) {
-        if (stack_in->Size() == 0) {
-          std::cout << msg << '\n';
-        } else {
-          std::cout << stack_in->Front() << '\n';
-        }
+        std::cout << msg << '\n';
       }
       continue;
     } else if (input == "size") {
-      std::cout << stack_in->Size() + stack_out->Size() << '\n';
+      std::cout << Queue->Size() << '\n';
       continue;
     } else if (input == "clear") {
-      stack_in->Clear();
-      stack_out->Clear();
+      Queue->Clear();
       std::cout << "ok" << '\n';
       continue;
     } else if (input == "min") {
       try {
-        long long value = stack_out->GetMin();
-        long long value2 = stack_in->GetMin();
-        if (value < value2) {
-          std::cout << value << '\n';
-        } else {
-          std::cout << value2 << '\n';
-        }
-
+        long long value = Queue->GetMin();
+        std::cout << value << '\n';
       } catch (const char *msg) {
-        if (stack_in->Size() == 0 && stack_out->Size() == 0) {
-          std::cout << msg << '\n';
-        } else if (stack_in->Size() == 0) {
-          std::cout << stack_out->GetMin() << '\n';
-        } else {
-          std::cout << stack_in->GetMin() << '\n';
-        }
+        std::cout << msg << '\n';
       }
-      continue;
     }
+    continue;
   }
 
-  delete stack_in;
-  delete stack_out;
+  delete Queue;
   return 0;
 }
