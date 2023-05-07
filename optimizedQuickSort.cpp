@@ -1,119 +1,131 @@
+#include <algorithm>
 #include <iostream>
+#include <stack>
 #include <utility>
 #include <vector>
 
+using std::swap;
+const int kNumberOfSubElements = 5;
+
 template <typename T>
-long BinarySearch(std::vector<T>& arr, long left, long right, T key) {
-  if (right <= left) {
-    return (key > arr[left]) ? (left + 1) : left;
+long BinarySearch(std::vector<T>& arr, long start, long end, T key) {
+  if (end <= start) {
+    return (arr[start] > key) ? start : start + 1;
   }
-  long mid = (left + right) / 2;
-  if (key == arr[mid]) {
+  long mid = (end + start) / 2;
+  if (arr[mid] == key) {
     return mid + 1;
-  } else if (key > arr[mid]) {
-    return BinarySearch<T>(arr, mid + 1, right, key);
+  } else if (arr[mid] < key) {
+    return BinarySearch(arr, mid + 1, end, key);
   } else {
-    return BinarySearch<T>(arr, left, mid - 1, key);
+    return BinarySearch(arr, start, mid, key);
   }
 }
 
 template <typename T>
-void InsertionSort(std::vector<T>& arr, long n, long offset) {
-  for (long i = offset + 1; i < offset + n; i++) {
+void InsertionSort(std::vector<T>& arr, long start, long end) {
+  for (long i = start + 1; i < end; i++) {
     T key = arr[i];
     long j = i - 1;
-    long index = BinarySearch<T>(arr, offset, j, key);
-    for (long k = i - 1; k >= index; k--) {
-      arr[k + 1] = arr[k];
+    long pos = BinarySearch<T>(arr, start, j, key);
+    for (; j >= pos; j--) {
+      arr[j + 1] = arr[j];
     }
-    arr[index] = key;
+    arr[pos] = key;
   }
 }
 
 template <typename T>
-long Partition(std::vector<T>& v, long start, long end, T pivot) {
-  long left = start, right = end;
+long Partition(std::vector<T>& a, long left, long right, T pivot_value) {
+  long start = left;
   while (left <= right) {
-    while (v[left] < pivot) {
-      left++;
+    for (; a[left] < pivot_value; ++left)
+      ;
+    for (; pivot_value < a[right]; --right)
+      ;
+    if (left >= right) {
+      break;
     }
-    while (v[right] > pivot) {
-      right--;
-    }
-    if (left <= right) {
-      std::swap(v[left], v[right]);
-      left++;
-      right--;
-    }
+    swap(a[left++], a[right--]);
   }
-  std::swap(v[start], v[left - 1]);
-  return left - 1;
+  return start + right;
 }
 
 template <typename T>
-T MedianOfMedians(std::vector<T>& v, long start, long end, long k) {
-  while (true) {
-    if (start == end) {
-      return v[start];
+long Pivot(std::vector<T>& vec, T pivot, long start, long end) {
+  long left = start, right = end - 1;
+  while (left < right) {
+    while (vec.at(left) < pivot && left <= right) left++;
+    while (vec.at(right) > pivot && right >= left) right--;
+    if (left >= right)
+      break;
+    else if (vec.at(left) == vec.at(right)) {
+      left++;
+      continue;
     }
-    long n = end - start + 1;
-    long numGroups = n / 5;
-    if (n % 5 != 0) {
-      numGroups++;
-    }
-    std::vector<T> medians;
-    for (long i = 0; i < numGroups; i++) {
-      long group_start = start + i * 5;
-      long group_end = std::min(group_start + 4, end);
-      InsertionSort<T>(v, group_end - group_start + 1, group_start);
-      long medianIndex = group_start + (group_end - group_start) / 2;
-      medians.push_back(v[medianIndex]);
-    }
-    T medianOfMedians =
-        MedianOfMedians<T>(medians, 0, medians.size() - 1, medians.size() / 2);
-    long pivotIndex = Partition<T>(v, start, end, medianOfMedians);
-    long rank = pivotIndex - start + 1;
-    if (k == rank) {
-      return v[pivotIndex];
-    } else if (k < rank) {
-      end = pivotIndex - 1;
-    } else {
-      start = pivotIndex + 1;
-      k -= rank;
-    }
+    swap(vec.at(left), vec.at(right));
   }
+  return right;
 }
 
 template <typename T>
-void QuickSort(std::vector<T>& arr, long start, long end) {
-  if (end - start <= 0) {
+T MedianOfMedians(std::vector<T>& vec, long k, long start, long end) {
+  if (end - start < 10) {
+    InsertionSort(vec, start, end);
+    return vec.at(k);
+  }
+  std::vector<T> medians;
+  for (long i = start; i < end; i += 5) {
+    if (end - i < 10) {
+      InsertionSort(vec, i, end);
+      medians.push_back(vec.at((i + end) / 2));
+    } else {
+      InsertionSort(vec, i, i + 5);
+      medians.push_back(vec.at(i + 2));
+    }
+  }
+  T median = MedianOfMedians(medians, medians.size() / 2, 0, medians.size());
+  long piv = Pivot(vec, median, start, end);
+  long length = piv - start + 1;
+
+  if (k < length) {
+    return MedianOfMedians(vec, k, start, piv);
+  } else if (k > length) {
+    return MedianOfMedians(vec, k - length, piv + 1, end);
+  } else
+    return vec[k];
+}
+
+template <typename T>
+void QuickSort(std::vector<T>& a) {
+  long size = a.size();
+  if (size <= 256) {
+    InsertionSort<T>(a, 0, size);
     return;
   }
-  if (end - start + 1 <= 256) {
-    InsertionSort<T>(arr, end - start + 1, start);
-    return;
-  }
-  std::vector<std::pair<long, long>> temporary_vector;
-  temporary_vector.push_back(std::make_pair(start, end));
-  while (!temporary_vector.empty()) {
-    std::pair<long, long> current = temporary_vector.back();
-    temporary_vector.pop_back();
-    start = current.first;
-    end = current.second;
-    if (end - start + 1 <= 256) {
-      InsertionSort<T>(arr, end - start + 1, start);
+  std::stack<std::pair<long, long>> index_states;
+  index_states.emplace(std::make_pair(0, size));
+  while (!index_states.empty()) {
+    long left = index_states.top().first;
+    long right = index_states.top().second;
+    index_states.pop();
+    if (right <= left) {
+      continue;
+    } else if (right - left + 1 <= 256) {
+      InsertionSort<T>(a, left, right);
+      continue;
     }
-    long pivot = MedianOfMedians<T>(arr, start, end, (start + end) / 2);
-    long pivot_index = Partition<T>(arr, start, end, pivot);
-    if (pivot_index - 1 - start <= 256) {
-      InsertionSort<T>(arr, pivot_index - start - 1, start);
+    T pivot = MedianOfMedians<T>(a, (right - left) / 2, left, right);
+    long pivot_new_index = Partition<T>(a, left, right, pivot);
+    if (pivot_new_index - left + 1 <= 256) {
+      InsertionSort(a, left, pivot_new_index + 1);
     } else {
-      temporary_vector.push_back(std::make_pair(start, pivot_index - 1));
+      index_states.emplace(std::make_pair(left, pivot_new_index + 1));
     }
-    if (end - pivot_index + 1 <= 256) {
-      InsertionSort<T>(arr, end - pivot_index + 1, pivot_index + 1);
+    if (right - pivot_new_index + 1 <= 256) {
+      InsertionSort(a, pivot_new_index + 1, right);
     } else {
-      temporary_vector.push_back(std::make_pair(pivot_index + 1, end));
+      index_states.emplace(std::make_pair(pivot_new_index + 1, right));
     }
   }
 }
@@ -127,14 +139,21 @@ int main() {
     std::cin >> place_holder;
     array.push_back(place_holder);
   }
-  QuickSort<long long>(array, 0, size - 1);
+  QuickSort<long long>(array);
+  // InsertionSort<long long>(array, 0, size);
   for (long i = 0; i < size; i++) {
     if (i != size - 1) {
       std::cout << array[i] << ' ';
       continue;
     }
-    std::cout << array[i];
+    std::cout << array[i] << '\n';
   }
 
+  for (long i = 1; i < size; i++) {
+    if (array[i] < array[i - 1]) {
+      std::cout << array[i] << " at " << i << '\n';
+      continue;
+    }
+  }
   return 0;
 }
