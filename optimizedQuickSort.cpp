@@ -59,12 +59,19 @@ long Pivot(std::vector<T>& vec, long pivot_index, long start, long end) {
   long left = start, right = end;
   T pivot = vec[pivot_index];
   while (left < right) {
+<<<<<<< HEAD
     for (; vec.at(left++) < pivot && left <= right && left < end &&
            right > start;) {
       ;
     }
     for (; vec.at(--right) > pivot && right >= left && right > start &&
            left < end;) {
+=======
+    for (; vec.at(left++) < pivot && left <= right;) {
+      ;
+    }
+    for (; vec.at(--right) > pivot && right >= left;) {
+>>>>>>> a0b34efb799b700d082511925ae2bc56378e4cef
       ;
     }
     if (left >= right) {
@@ -80,6 +87,7 @@ long Pivot(std::vector<T>& vec, long pivot_index, long start, long end) {
 
 template <typename T>
 long MedianOfMedians(std::vector<T>& vec, long k, long start, long end) {
+<<<<<<< HEAD
   if (end - start < kNumberOfSubElements) {
     InsertionSort(vec, start, end);
     return start + k;
@@ -90,6 +98,14 @@ long MedianOfMedians(std::vector<T>& vec, long k, long start, long end) {
   }
   std::vector<T> medians;
   for (long i = start; i < end; i += kNumberOfSubElements) {
+=======
+  if (end - start < 5) {
+    InsertionSort(vec, start, end);
+    return start + k;
+  }
+  std::vector<T> medians;
+  for (long i = start; i < end; i += 5) {
+>>>>>>> a0b34efb799b700d082511925ae2bc56378e4cef
     if (end - i < 5) {
       InsertionSort(vec, i, end);
       medians.push_back(vec.at((i + end) / 2));
@@ -112,7 +128,11 @@ long MedianOfMedians(std::vector<T>& vec, long k, long start, long end) {
 template <typename T>
 void QuickSort(std::vector<T>& a) {
   long size = a.size();
+<<<<<<< HEAD
   if (size <= 25) {
+=======
+  if (size <= 100) {
+>>>>>>> a0b34efb799b700d082511925ae2bc56378e4cef
     InsertionSort<T>(a, 0, size);
     return;
   }
@@ -124,19 +144,34 @@ void QuickSort(std::vector<T>& a) {
     index_states.pop();
     if (right <= left) {
       continue;
+<<<<<<< HEAD
     } else if (right - left + 1 <= 25) {
+=======
+    } else if (right - left + 1 <= 100) {
+>>>>>>> a0b34efb799b700d082511925ae2bc56378e4cef
       InsertionSort<T>(a, left, right);
       continue;
     }
     T pivot = MedianOfMedians<T>(a, (right - left) / 2, left, right);
+<<<<<<< HEAD
     long pivot_index = Partition<T>(a, left, right - 1, pivot);
     if (pivot_index - left + 1 <= 25) {
       InsertionSort(a, left, pivot_index + 1);
+=======
+    long pivot_new_index = Partition<T>(a, left, right - 1, pivot);
+    if (pivot_new_index - left + 1 <= 100) {
+      InsertionSort(a, left, pivot_new_index + 1);
+>>>>>>> a0b34efb799b700d082511925ae2bc56378e4cef
     } else {
       index_states.emplace(std::make_pair(left, pivot_index + 1));
     }
+<<<<<<< HEAD
     if (right - pivot_index + 1 <= 25) {
       InsertionSort(a, pivot_index + 1, right);
+=======
+    if (right - pivot_new_index + 1 <= 100) {
+      InsertionSort(a, pivot_new_index + 1, right);
+>>>>>>> a0b34efb799b700d082511925ae2bc56378e4cef
     } else {
       index_states.emplace(std::make_pair(pivot_index + 1, right));
     }
@@ -161,11 +196,5 @@ int main() {
     std::cout << array[i] << '\n';
   }
 
-  for (long i = 1; i < size; i++) {
-    if (array[i] < array[i - 1]) {
-      std::cout << array[i] << " at " << i << '\n';
-      continue;
-    }
-  }
   return 0;
 }
