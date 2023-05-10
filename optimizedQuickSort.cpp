@@ -36,8 +36,8 @@ void InsertionSort(std::vector<T>& arr, long start, long end) {
 }
 
 template <typename T>
-long Partition(std::vector<T>& a, long left, long right, T pivot_value) {
-  long start = left;
+long Partition(std::vector<T>& a, long left, long right, long pivot_index) {
+  T pivot_value = a[pivot_index];
   while (left <= right) {
     for (; a[left] < pivot_value; ++left)
       ;
@@ -45,21 +45,31 @@ long Partition(std::vector<T>& a, long left, long right, T pivot_value) {
       ;
     if (left >= right) {
       break;
+    } else if (a.at(left) == a.at(right)) {
+      left++;
+      continue;
     }
     swap(a[left++], a[right--]);
   }
-  return start + right;
+  return right;
 }
 
 template <typename T>
-long Pivot(std::vector<T>& vec, T pivot, long start, long end) {
-  long left = start, right = end - 1;
+long Pivot(std::vector<T>& vec, long pivot_index, long start, long end) {
+  long left = start, right = end;
+  T pivot = vec[pivot_index];
   while (left < right) {
-    while (vec.at(left) < pivot && left <= right) left++;
-    while (vec.at(right) > pivot && right >= left) right--;
-    if (left >= right)
+    for (; vec.at(left++) < pivot && left <= right && left < end &&
+           right > start;) {
+      ;
+    }
+    for (; vec.at(--right) > pivot && right >= left && right > start &&
+           left < end;) {
+      ;
+    }
+    if (left >= right) {
       break;
-    else if (vec.at(left) == vec.at(right)) {
+    } else if (vec.at(left) == vec.at(right)) {
       left++;
       continue;
     }
@@ -69,37 +79,40 @@ long Pivot(std::vector<T>& vec, T pivot, long start, long end) {
 }
 
 template <typename T>
-T MedianOfMedians(std::vector<T>& vec, long k, long start, long end) {
-  if (end - start < 10) {
+long MedianOfMedians(std::vector<T>& vec, long k, long start, long end) {
+  if (end - start < kNumberOfSubElements) {
     InsertionSort(vec, start, end);
-    return vec.at(k);
+    return start + k;
+  }
+  long size = vec.size();
+  if (k >= size) {
+    return end - 1;
   }
   std::vector<T> medians;
-  for (long i = start; i < end; i += 5) {
-    if (end - i < 10) {
+  for (long i = start; i < end; i += kNumberOfSubElements) {
+    if (end - i < 5) {
       InsertionSort(vec, i, end);
       medians.push_back(vec.at((i + end) / 2));
     } else {
-      InsertionSort(vec, i, i + 5);
+      InsertionSort(vec, i, i + kNumberOfSubElements);
       medians.push_back(vec.at(i + 2));
     }
   }
-  T median = MedianOfMedians(medians, medians.size() / 2, 0, medians.size());
+  long median = MedianOfMedians(medians, medians.size() / 2, 0, medians.size());
   long piv = Pivot(vec, median, start, end);
   long length = piv - start + 1;
-
   if (k < length) {
     return MedianOfMedians(vec, k, start, piv);
   } else if (k > length) {
     return MedianOfMedians(vec, k - length, piv + 1, end);
   } else
-    return vec[k];
+    return piv;
 }
 
 template <typename T>
 void QuickSort(std::vector<T>& a) {
   long size = a.size();
-  if (size <= 256) {
+  if (size <= 25) {
     InsertionSort<T>(a, 0, size);
     return;
   }
@@ -111,21 +124,21 @@ void QuickSort(std::vector<T>& a) {
     index_states.pop();
     if (right <= left) {
       continue;
-    } else if (right - left + 1 <= 256) {
+    } else if (right - left + 1 <= 25) {
       InsertionSort<T>(a, left, right);
       continue;
     }
     T pivot = MedianOfMedians<T>(a, (right - left) / 2, left, right);
-    long pivot_new_index = Partition<T>(a, left, right, pivot);
-    if (pivot_new_index - left + 1 <= 256) {
-      InsertionSort(a, left, pivot_new_index + 1);
+    long pivot_index = Partition<T>(a, left, right - 1, pivot);
+    if (pivot_index - left + 1 <= 25) {
+      InsertionSort(a, left, pivot_index + 1);
     } else {
-      index_states.emplace(std::make_pair(left, pivot_new_index + 1));
+      index_states.emplace(std::make_pair(left, pivot_index + 1));
     }
-    if (right - pivot_new_index + 1 <= 256) {
-      InsertionSort(a, pivot_new_index + 1, right);
+    if (right - pivot_index + 1 <= 25) {
+      InsertionSort(a, pivot_index + 1, right);
     } else {
-      index_states.emplace(std::make_pair(pivot_new_index + 1, right));
+      index_states.emplace(std::make_pair(pivot_index + 1, right));
     }
   }
 }
@@ -140,7 +153,6 @@ int main() {
     array.push_back(place_holder);
   }
   QuickSort<long long>(array);
-  // InsertionSort<long long>(array, 0, size);
   for (long i = 0; i < size; i++) {
     if (i != size - 1) {
       std::cout << array[i] << ' ';
