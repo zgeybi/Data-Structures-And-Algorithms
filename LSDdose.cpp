@@ -1,66 +1,56 @@
 #include <iostream>
 #include <vector>
 
-template <typename T>
-T Max(T array[], long n) {
-  T max = array[0];
-  for (long i = 1; i < n; i++) {
-    if (array[i] > max) {
-      max = array[i];
-    }
-  }
-  return max;
-}
+void CountingSort(std::vector<long long>& arr, int byte_index) {
+  const int kRadix = 256;
+  int size = arr.size();
 
-template <typename T>
-void CountingSort(T array[], long size, long place) {
-  const int kMAX = 10;
-  std::vector<T> output(size);
-  long count[kMAX]{0};
+  std::vector<long long> count(kRadix, 0);
+  std::vector<long long> output(size);
 
-  for (long i = 0; i < size; i++) {
-    count[(array[i] / place) % 10]++;
+  for (int i = 0; i < size; ++i) {
+    ++count[(arr[i] >> (byte_index * 8)) & 0xFF];
   }
 
-  for (long i = 1; i < kMAX; i++) {
+  for (int i = 1; i < kRadix; ++i) {
     count[i] += count[i - 1];
   }
 
-  for (long i = size - 1; i >= 0; i--) {
-    output[count[(array[i] / place) % 10] - 1] = array[i];
-    count[(array[i] / place) % 10]--;
+  for (int i = size - 1; i >= 0; --i) {
+    output[count[(arr[i] >> (byte_index * 8)) & 0xFF] - 1] = arr[i];
+    --count[(arr[i] >> (byte_index * 8)) & 0xFF];
   }
 
-  for (long i = 0; i < size; i++) {
-    array[i] = output[i];
+  for (int i = 0; i < size; ++i) {
+    arr[i] = output[i];
   }
 }
 
-template <typename T>
-void RadixSort(T array[], long size) {
-  T max = Max(array, size);
-  for (long place = 1; max / place > 0; place *= 10) {
-    CountingSort(array, size, place);
-  }
-}
+void RadixSort(std::vector<long long>& arr) {
+  const int kByteCount = sizeof(long long);
 
-template <typename T>
-void PrintArray(std::vector<T> array) {
-  for (auto elem : array) {
-    std::cout << elem << " ";
+  for (int byte_index = 0; byte_index < kByteCount; ++byte_index) {
+    CountingSort(arr, byte_index);
   }
-  std::cout << '\n';
 }
 
 int main() {
-  long n;
+  int n;
+  long long place_holder;
+  std::vector<long long> arr;
   std::cin >> n;
-  std::vector<unsigned long long> array(n);
-
-  for (long i = 0; i < n; i++) {
-    std::cin >> array[i];
+  for (int i = 0; i < n; i++) {
+    std::cin >> place_holder;
+    arr.push_back(place_holder);
   }
 
-  RadixSort<unsigned long long>(&array[0], n);
-  PrintArray<unsigned long long>(array);
+  RadixSort(arr);
+
+  for (long long num : arr) {
+    std::cout << num << " ";
+  }
+  std::cout << '\n';
+
+  return 0;
 }
+
