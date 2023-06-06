@@ -89,33 +89,6 @@ int FindMin(Node* node) {
   }
   return current->key;
 }
-/* int FindNext(Node* node, Node* prev, int key) {
-  if (node == nullptr && prev != nullptr) {
-    if (prev->key < key) {
-      return -1;
-    }
-    int answer = prev->key;
-    return answer;
-  }
-  if (node == nullptr) {
-    return -1;
-  }
-  if (prev->key > key && node->key < key) {
-    int answer = prev->key;
-    return answer;
-  }
-  if (prev->key < key && node->key > key) {
-    return FindNext(node->left, node, key);
-  }
-  if (node->key > key) {
-    return FindNext(node->left, node, key);
-  }
-  if (node->key < key) {
-    return FindNext(node->right, node, key);
-  }
-  return node->key;
-} */
-
 int FindNext(Node* node, int k) {
   if (node == nullptr) {
     return -1;
