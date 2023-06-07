@@ -1,12 +1,13 @@
 #include <iostream>
 
+template<typename T>
 struct Node {
-  int key;
+  T key;
   int height;
   Node* left;
   Node* right;
 
-  Node(int k) {
+  Node(T k) {
     key = k;
     height = 1;
     left = nullptr;
@@ -47,7 +48,7 @@ Node* RotateLeft(Node* node) {
   UpdateHeight(rightchild);
   return rightchild;
 }
-Node* Rebalance(Node* node, int key) {
+Node* Rebalance(Node* node, T key) {
   UpdateHeight(node);
   int balance_factor = GetBalanceFactor(node);
   if (balance_factor > 1 && key < node->left->key) {
@@ -66,7 +67,7 @@ Node* Rebalance(Node* node, int key) {
   }
   return node;
 }
-Node* Insert(Node* node, int key) {
+Node* Insert(Node* node, T key) {
   if (node == nullptr) {
     return new Node(key);
   }
@@ -89,12 +90,12 @@ int FindMin(Node* node) {
   }
   return current->key;
 }
-int FindNext(Node* node, int k) {
+T FindNext(Node* node, int k) {
   if (node == nullptr) {
     return -1;
   }
 
-  int result = -1;
+  T result = -1;
   while (node != nullptr) {
     if (node->key >= k) {
       result = node->key;
@@ -118,7 +119,7 @@ void DeleteTree(Node* node) {
 int main() {
   int n;
   std::cin >> n;
-  Node* root = nullptr;
+  Node<int>* root = nullptr;
   char prev_op = ' ';
   int prev_result = 0;
   for (int i = 0; i < n; i++) {
