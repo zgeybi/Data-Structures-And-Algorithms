@@ -1,16 +1,19 @@
 #include <iostream>
 
+template<typename T>
 struct Node {
-  int data;
+  T data;
   Node* left;
   Node* right;
 
-  Node(int value) : data(value), left(nullptr), right(nullptr) {}
+  Node(T value) : data(value), left(nullptr), right(nullptr) {}
 };
+
+template<typename T>
 class Set {
  private:
   Node* root_;
-  Node* InsertNode(Node* root, int value) {
+  Node* InsertNode(Node* root, T value) {
     if (root == nullptr) {
       return new Node(value);
     }
@@ -33,7 +36,7 @@ class Set {
     node = nullptr;
   }
 
-  bool SearchNode(Node* root, int value) {
+  bool SearchNode(Node* root, T value) {
     if (root == nullptr) {
       return false;
     }
@@ -50,11 +53,11 @@ class Set {
   Set() : root_(nullptr) {}
   ~Set() { Clear(root_); }
 
-  void Add(int value) { root_ = InsertNode(root_, value); }
+  void Add(T value) { root_ = InsertNode(root_, value); }
 
-  void Remove(int value) { root_ = RemoveNode(root_, value); }
+  void Remove(T value) { root_ = RemoveNode(root_, value); }
 
-  bool Contains(int value) { return SearchNode(root_, value); }
+  bool Contains(T value) { return SearchNode(root_, value); }
 
  private:
   Node* FindMinNode(Node* node) {
@@ -65,7 +68,7 @@ class Set {
     return FindMinNode(node->left);
   }
 
-  Node* RemoveNode(Node* root, int value) {
+  Node* RemoveNode(Node* root, T value) {
     if (root == nullptr) {
       return nullptr;
     }
@@ -100,7 +103,7 @@ int main() {
   int num_queries;
   std::cin >> num_queries;
 
-  Set my_set;
+  Set<int> my_set;
 
   for (int i = 0; i < num_queries; ++i) {
     char query;
