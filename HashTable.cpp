@@ -1,101 +1,47 @@
 #include <iostream>
+#include <vector>
 
-template<typename T>
-struct Node {
-  T data;
-  Node* left;
-  Node* right;
-
-  Node(T value) : data(value), left(nullptr), right(nullptr) {}
-};
-
-template<typename T>
 class Set {
  private:
-  Node* root_;
-  Node* InsertNode(Node* root, T value) {
-    if (root == nullptr) {
-      return new Node(value);
-    }
-    if (value < root->data) {
-      root->left = InsertNode(root->left, value);
-    } else if (value > root->data) {
-      root->right = InsertNode(root->right, value);
-    }
+  static const int kMaxSize = 100000;
+  std::vector<std::vector<int>> hash_set_;
 
-    return root;
-  }
-
-  void Clear(Node* node) {
-    if (node == nullptr) {
-      return;
-    }
-    Clear(node->left);
-    Clear(node->right);
-    delete node;
-    node = nullptr;
-  }
-
-  bool SearchNode(Node* root, T value) {
-    if (root == nullptr) {
-      return false;
-    }
-    if (value == root->data) {
-      return true;
-    }
-    if (value < root->data) {
-      return SearchNode(root->left, value);
-    }
-    return SearchNode(root->right, value);
-  }
+  int Hash(int value) { return value % kMaxSize; }
 
  public:
-  Set() : root_(nullptr) {}
-  ~Set() { Clear(root_); }
+  Set() { hash_set_.resize(kMaxSize); }
 
-  void Add(T value) { root_ = InsertNode(root_, value); }
-
-  void Remove(T value) { root_ = RemoveNode(root_, value); }
-
-  bool Contains(T value) { return SearchNode(root_, value); }
-
- private:
-  Node* FindMinNode(Node* node) {
-    if (node->left == nullptr) {
-      return node;
-    }
-
-    return FindMinNode(node->left);
-  }
-
-  Node* RemoveNode(Node* root, T value) {
-    if (root == nullptr) {
-      return nullptr;
-    }
-
-    if (value < root->data) {
-      root->left = RemoveNode(root->left, value);
-    } else if (value > root->data) {
-      root->right = RemoveNode(root->right, value);
-    } else {
-      if (root->left == nullptr && root->right == nullptr) {
-        delete root;
-        root = nullptr;
-      } else if (root->left == nullptr) {
-        Node* temp = root;
-        root = root->right;
-        delete temp;
-      } else if (root->right == nullptr) {
-        Node* temp = root;
-        root = root->left;
-        delete temp;
-      } else {
-        Node* min_node = FindMinNode(root->right);
-        root->data = min_node->data;
-        root->right = RemoveNode(root->right, min_node->data);
+  void Add(int value) {
+    int index = Hash(value);
+    std::vector<int>& bucket = hash_set_[index];
+    for (int val : bucket) {
+      if (val == value) {
+        return;
       }
     }
-    return root;
+    bucket.push_back(value);
+  }
+
+  void Remove(int value) {
+    int index = Hash(value);
+    std::vector<int>& bucket = hash_set_[index];
+    for (auto it = bucket.begin(); it != bucket.end(); ++it) {
+      if (*it == value) {
+        bucket.erase(it);
+        break;
+      }
+    }
+  }
+
+  bool Contains(int value) {
+    int index = Hash(value);
+    const std::vector<int>& bucket = hash_set_[index];
+    for (int val : bucket) {
+      if (val == value) {
+        return true;
+      }
+    }
+    return false;
   }
 };
 
@@ -103,7 +49,7 @@ int main() {
   int num_queries;
   std::cin >> num_queries;
 
-  Set<int> my_set;
+  Set my_set;
 
   for (int i = 0; i < num_queries; ++i) {
     char query;
@@ -125,3 +71,4 @@ int main() {
 
   return 0;
 }
+
